@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#151B1C">
+<title>Agendar llamada estratégica | HALLEL</title>
+<meta name="description" content="Agenda una llamada estratégica de 30 minutos con HALLEL. Consulta horarios disponibles y confirma tu cita mediante Google Calendar.">
+<link rel="canonical" href="https://oscarbarruetam.github.io/hallel-media/agendar/">
+<link rel="icon" type="image/svg+xml" href="../assets/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#151B1C;--paper:#F8F7F2;--moss:#31584D;--signal:#C8F36B;--line:#D9DDD7}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}button{cursor:pointer;font:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:4px}
+.shell{max-width:1120px;width:calc(100% - 44px);margin-inline:auto}
+header{background:var(--ink);color:#fff;border-bottom:1px solid #ffffff22}
+.nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand img{height:40px;width:155px;max-width:32vw;object-fit:contain;object-position:left}
+.navtools{display:flex;align-items:center;gap:21px}
+.navtools a{font-weight:700;color:#dce9dd;font-size:13px}
+.lang{background:transparent;border:1px solid #657a6c;color:#fff;padding:8px 12px;border-radius:7px;font-size:12px;font-weight:800}
+.eyebrow{color:var(--moss);letter-spacing:.15em;font-size:11px;font-weight:900}
+.hero{padding:75px 0 42px}
+.hero h1{font-size:clamp(45px,6.4vw,84px);line-height:1.03;letter-spacing:-.075em;margin:17px 0 22px;max-width:900px}
+.hero h1 em{font-family:Georgia,serif;font-style:italic;font-weight:400;color:var(--moss)}
+.hero .lead{font-size:clamp(16px,1.5vw,19px);color:#5c6f61;max-width:750px;margin:0}
+.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:22px;align-items:start;margin:14px auto 85px}
+.booking{padding:36px 38px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px #213b2810}
+.booking h2{font-size:clamp(28px,3vw,40px);line-height:1.12;letter-spacing:-.055em;margin:8px 0 13px}
+.booking>p{font-size:15px;color:#576e60;margin:0 0 21px;max-width:550px}
+.details{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 29px}
+.detail{background:#edf3eb;border-radius:8px;padding:11px 15px;color:#31584D;font-size:12px;font-weight:800}
+.detail strong{display:block;color:#151B1C;font-size:15px;font-weight:850;margin-top:3px}
+.service-context{margin-bottom:21px;padding:13px 15px;background:#f2f5ef;border-left:3px solid var(--moss);color:#466251;font-size:13px;line-height:1.5}
+.service-context strong{display:block;font-size:11px;letter-spacing:.09em;color:#31584D;margin-bottom:4px}
+.booking-link{min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--ink);color:#fff;border-radius:8px;padding:16px 22px;font-weight:850;font-size:15px;transition:background .18s}
+.booking-link:hover{background:var(--moss)}
+.booking-link .arrow{color:var(--signal);font-size:24px;line-height:1}
+.booking-note{margin:19px 0 0!important;color:#67796b!important;font-size:12px!important}
+.booking-note a{text-decoration:underline;color:var(--moss);font-weight:800}
+.side{border-radius:12px;background:#21392e;color:#f3f7f1;padding:29px}
+.side h2{font-size:24px;letter-spacing:-.045em;line-height:1.2;margin:11px 0 18px}
+.side p{font-size:13px;line-height:1.7;color:#c7d7ca;margin:0}
+.side-step{padding:18px 0;border-top:1px solid #526c5b}
+.side-step small{font-size:10px;color:var(--signal);font-weight:850;letter-spacing:.11em}
+.side-step h3{font-size:16px;line-height:1.25;margin:6px 0 7px}
+.side-step p{font-size:12px}
+.side .muted{border-top:1px solid #526c5b;padding-top:18px;margin-top:9px;color:#aabfb0;font-size:11px}
+footer{background:var(--ink);color:#c5d2c8;padding:27px 0}
+.foot{display:flex;justify-content:space-between;gap:16px;font-size:12px;align-items:center}
+.foot a:hover{text-decoration:underline}
+@media(max-width:840px){.layout{grid-template-columns:1fr}.side{order:2}}
+@media(max-width:600px){.shell{width:calc(100% - 32px)}.nav{min-height:67px}.brand img{width:122px}.navtools{gap:11px}.hero{padding:52px 0 24px}.hero h1{font-size:clamp(42px,11vw,66px)}.layout{margin-bottom:57px}.booking{padding:25px 22px}.booking-link{padding:14px 16px;font-size:14px}.side{padding:24px}.foot{flex-direction:column;align-items:flex-start}}
+
+.social-contact{margin-top:24px}
+.social-divider{display:flex;align-items:center;gap:12px;margin-bottom:13px;color:#708376;font-size:10px;font-weight:850;letter-spacing:.1em}
+.social-divider:before,.social-divider:after{content:"";height:1px;background:var(--line);flex:1}
+.instagram-dm{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 20px;border:1px solid #9ab1a0;border-radius:8px;color:var(--moss);background:#fff;min-height:55px;font-size:14px;font-weight:850;transition:background .15s,border-color .15s}
+.instagram-dm:hover{background:#edf3eb;border-color:var(--moss)}
+.instagram-label{display:flex;align-items:center;gap:11px}
+.dm-arrow{font-size:21px;line-height:1}
+.whatsapp-dm{margin-top:10px}
+</style>
+<link rel="stylesheet" href="../assets/back-to-top.css">
+</head><body>
+<header><div class="shell nav"><a class="brand" href="../" aria-label="HALLEL — Inicio"><img src="../assets/logo.svg" alt="HALLEL"></a>
+<div class="navtools"><a href="../#expertise"><span data-en="Services" data-es="Servicios">Servicios</span></a><button type="button" class="lang" id="language" aria-label="Cambiar a inglés">EN</button></div></div></header>
+<main>
+<section class="hero"><div class="shell"><span class="eyebrow">HALLEL / <span data-en="STRATEGY CALL" data-es="LLAMADA ESTRATÉGICA">LLAMADA ESTRATÉGICA</span></span>
+<h1><span data-en="Let's talk about your" data-es="Hablemos de tu">Hablemos de tu</span> <em><span data-en="next step." data-es="siguiente paso.">siguiente paso.</span></em></h1>
+<p class="lead"><span data-en="Choose an available time in Google Calendar and book a 30-minute conversation to discuss your ecommerce, challenges and priorities." data-es="Elige un horario disponible en Google Calendar y reserva una conversación de 30 minutos para hablar de tu ecommerce, retos y prioridades.">Elige un horario disponible en Google Calendar y reserva una conversación de 30 minutos para hablar de tu ecommerce, retos y prioridades.</span></p>
+</div></section>
+<section class="shell layout">
+<div class="booking">
+<span class="eyebrow"><span data-en="BOOK ONLINE" data-es="AGENDA EN LÍNEA">AGENDA EN LÍNEA</span></span>
+<h2><span data-en="30 minutes to clarify the next move." data-es="30 minutos para definir el siguiente paso.">30 minutos para definir el siguiente paso.</span></h2>
+<p><span data-en="Choose the time that works best for you. Google Calendar will show current availability and manage your booking confirmation." data-es="Elige el horario que mejor te funcione. Google Calendar mostrará la disponibilidad actual y gestionará la confirmación de tu reserva.">Elige el horario que mejor te funcione. Google Calendar mostrará la disponibilidad actual y gestionará la confirmación de tu reserva.</span></p>
+<div class="details">
+<div class="detail"><span data-en="DURATION" data-es="DURACIÓN">DURACIÓN</span><strong><span data-en="30 minutes" data-es="30 minutos">30 minutos</span></strong></div>
+<div class="detail"><span data-en="MORNING WINDOW" data-es="HORARIO MATUTINO">HORARIO MATUTINO</span><strong>10:00–14:00</strong></div>
+<div class="detail"><span data-en="AFTERNOON WINDOW" data-es="HORARIO VESPERTINO">HORARIO VESPERTINO</span><strong>15:00–18:00</strong></div>
+<div class="detail"><span data-en="TIME ZONE" data-es="ZONA HORARIA">ZONA HORARIA</span><strong><span data-en="Mexico City" data-es="Ciudad de México">Ciudad de México</span></strong></div>
+</div>
+<div id="service-context" class="service-context" hidden><strong><span data-en="YOUR SERVICE OF INTEREST" data-es="SERVICIO DE TU INTERÉS">SERVICIO DE TU INTERÉS</span></strong><span id="service-selection"></span></div>
+<a class="booking-link" href="https://calendar.app.google/pT9L2mMR988rwKQ38" target="_blank" rel="noopener noreferrer" aria-label="Abrir agenda de HALLEL en Google Calendar"><span data-en="View availability and book" data-es="Ver disponibilidad y reservar">Ver disponibilidad y reservar</span> <span class="arrow" aria-hidden="true">↗</span></a>
+<div class="social-contact"><div class="social-divider"><span data-en="OR CONTACT ME DIRECTLY" data-es="O ESCRÍBEME DIRECTAMENTE">O ESCRÍBEME DIRECTAMENTE</span></div>
+<a class="instagram-dm" href="https://ig.me/m/oscarbarrueta.cro" target="_blank" rel="noopener noreferrer" aria-label="Abrir mensaje directo en Instagram a @oscarbarrueta.cro"><span class="instagram-label"><svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.75" cy="6.4" r=".85" fill="currentColor" stroke="none"/></svg><span data-en="Message me on Instagram" data-es="Escríbeme por DM en Instagram">Escríbeme por DM en Instagram</span></span><span class="dm-arrow" aria-hidden="true">↗</span></a>
+<a class="instagram-dm whatsapp-dm" href="https://wa.me/5215529365784?text=Hola%2C%20vi%20el%20sitio%20de%20HALLEL%20y%20quiero%20conversar%20sobre%20mi%20tienda." target="_blank" rel="noopener noreferrer" aria-label="Abrir conversación con HALLEL en WhatsApp"><span class="instagram-label"><svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.3 11.9a8.3 8.3 0 0 1-12.2 7.4L3.5 20.5l1.2-4.5A8.3 8.3 0 1 1 20.3 11.9Z"/><path d="M8.9 8.2c-.4-.2-.7-.2-.9.2-.8 1.1.5 3.6 2.6 5.4 1.9 1.6 3.8 2.1 4.9 1.4.4-.3.6-1 .5-1.3l-2.1-.9-.9 1c-1.4-.6-2.7-1.7-3.5-3.2l.9-.9-1.5-1.7Z" stroke-linejoin="round"/></svg><span data-en="Message me on WhatsApp" data-es="Escríbeme por WhatsApp">Escríbeme por WhatsApp</span></span><span class="dm-arrow" aria-hidden="true">↗</span></a>
+</div>
+<p class="booking-note"><span data-en="You will complete the booking on Google Calendar. Only Google confirms the appointment and sends meeting details. Available time slots may differ from the usual windows shown above." data-es="Completarás la reserva en Google Calendar. Solo Google confirma la cita y envía sus detalles. Los horarios disponibles pueden variar respecto a las ventanas habituales indicadas.">Completarás la reserva en Google Calendar. Solo Google confirma la cita y envía sus detalles. Los horarios disponibles pueden variar respecto a las ventanas habituales indicadas.</span></p>
+</div>
+<aside class="side"><span class="eyebrow" style="color:#C8F36B"><span data-en="WHAT TO EXPECT" data-es="CÓMO FUNCIONA">CÓMO FUNCIONA</span></span>
+<h2><span data-en="A conversation with a purpose." data-es="Una conversación con propósito.">Una conversación con propósito.</span></h2>
+<div class="side-step"><small>01</small><h3><span data-en="Choose a time" data-es="Selecciona un horario">Selecciona un horario</span></h3><p><span data-en="Open Google Calendar to see the slots currently available." data-es="Consulta en Google Calendar los espacios disponibles.">Consulta en Google Calendar los espacios disponibles.</span></p></div>
+<div class="side-step"><small>02</small><h3><span data-en="Confirm your booking" data-es="Confirma tu reserva">Confirma tu reserva</span></h3><p><span data-en="Enter your details on the Google booking page. The calendar handles confirmation and meeting information." data-es="Ingresa tus datos en la página de Google. La agenda gestiona la confirmación y los datos de la reunión.">Ingresa tus datos en la página de Google. La agenda gestiona la confirmación y los datos de la reunión.</span></p></div>
+<div class="side-step"><small>03</small><h3><span data-en="Discuss your priorities" data-es="Hablemos de prioridades">Hablemos de prioridades</span></h3><p><span data-en="We'll talk about your business context and identify which next steps are worth exploring." data-es="Revisaremos el contexto de tu negocio y cuáles son los siguientes pasos más importantes.">Revisaremos el contexto de tu negocio y cuáles son los siguientes pasos más importantes.</span></p></div>
+<p class="muted"><span data-en="This website does not collect or confirm reservations. Booking availability and video-conference details depend on your Google Calendar appointment page." data-es="Este sitio no recibe ni confirma reservas. La disponibilidad y los detalles de la videollamada dependen de la agenda configurada en Google Calendar.">Este sitio no recibe ni confirma reservas. La disponibilidad y los detalles de la videollamada dependen de la agenda configurada en Google Calendar.</span></p>
+</aside>
+</section>
+</main>
+<footer><div class="shell foot"><span>© HALLEL · Commerce &amp; Growth Studio</span><a href="../"><span data-en="← Back to home" data-es="← Volver al inicio">← Volver al inicio</span></a></div></footer>
+<script>(function(){
+"use strict";
+const b=document.getElementById("language");let lang="es";
+function setLang(l){
+ lang=l;document.documentElement.lang=l;
+ document.querySelectorAll("[data-en][data-es]").forEach(function(el){el.textContent=el.getAttribute("data-"+l)});
+ b.textContent=l==="es"?"EN":"ES";b.setAttribute("aria-label",l==="es"?"Cambiar a inglés":"Switch to Spanish");
+ try{localStorage.setItem("hallel-lang",l)}catch(e){}
+}
+b.addEventListener("click",function(){setLang(lang==="es"?"en":"es")});
+let saved="es";try{if(localStorage.getItem("hallel-lang")==="en")saved="en"}catch(e){}
+setLang(saved);
+try{
+ const params=new URLSearchParams(location.search);
+ const choice=(params.get("servicio")||"").trim().slice(0,120);
+ const sub=(params.get("subservicio")||"").trim().slice(0,120);
+ if(choice||sub){
+   document.getElementById("service-context").hidden=false;
+   document.getElementById("service-selection").textContent=[choice,sub].filter(Boolean).join(" · ");
+ }
+}catch(e){}
+})();</script>
+<script src="../assets/back-to-top.js" defer></script>
+</body></html>
