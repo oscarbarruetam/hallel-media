@@ -1,0 +1,46 @@
+name: Import HALLEL website
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-hallel.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out destination
+        uses: actions/checkout@v4
+      - name: Import HALLEL pages and static assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/oscarbarruetam/oscar-barrueta-portfolio.git /tmp/hallel-source
+          cp -a /tmp/hallel-source/hallel/. ./
+          cp -a /tmp/hallel-source/assets/. ./assets/
+          touch .nojekyll
+          python3 - <<'PY'
+          from pathlib import Path
+          old = "https://oscarbarruetam.github.io/oscar-barrueta-portfolio/hallel/"
+          staging = "https://oscarbarruetam.github.io/hallel-media/"
+          for file in Path(".").rglob("*.html"):
+              if ".git" in file.parts:
+                  continue
+              html = file.read_text(encoding="utf-8")
+              html = html.replace(old, staging)
+              if file.parts[0] == "servicios":
+                  html = html.replace("../../../assets/", "../../assets/")
+              elif file.parts[0] == "resultados":
+                  html = html.replace("../../assets/results/", "../assets/results/")
+              file.write_text(html, encoding="utf-8")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Import standalone HALLEL website and shared assets"
+            git push origin HEAD:main
+          fi
