@@ -19,8 +19,23 @@ button{cursor:pointer;border:0;border-radius:10px;font-weight:750;padding:13px 1
 <form id="loginForm"><label class="label" for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" required>
 <label class="label" for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" minlength="12" required>
 <button id="submit" class="primary" type="submit">Ingresar</button></form>
-<button class="link" type="button" id="switch">Crear mi cuenta</button></section>
+<p class="fine">Los nuevos integrantes reciben su acceso por invitación.</p></section>
 <section id="accountSection" hidden><div class="sub">CUENTA CONECTADA</div><h1>Bienvenido a Hallel</h1><p id="accountEmail"></p><p id="accountRole"></p><button id="logout" type="button">Cerrar sesión</button></section>
+<section id="passwordSection" hidden><div class="sub">INVITACIÓN A HALLEL</div><h1>Activa tu cuenta</h1><p>Establece tu contraseña privada para entrar a tu marca asignada.</p>
+<form id="passwordForm"><label class="label" for="newPassword">Nueva contraseña (mínimo 12 caracteres)</label>
+<input id="newPassword" type="password" minlength="12" autocomplete="new-password" required>
+<button class="primary" type="submit">Guardar contraseña</button></form></section>
+<section id="mfaSection" hidden><div class="sub">SEGURIDAD HALLEL</div><h1 id="mfaTitle">Protege tu acceso</h1>
+<p id="mfaDesc">Los administradores deben activar un segundo factor de autenticación.</p>
+<button class="primary" type="button" id="startMfa" hidden>Configurar autenticador</button>
+<div id="qrWrapper" hidden><img id="mfaQR" style="max-width:210px;width:100%;height:auto;display:block;margin:12px auto" alt="Código QR para configurar tu aplicación autenticadora">
+<p>Escanea el QR con Google Authenticator, Microsoft Authenticator o una app TOTP compatible.</p>
+<button class="link" type="button" id="showSecret">Usar clave manual</button><p id="mfaSecret" hidden style="overflow-wrap:anywhere"></p></div>
+<form id="mfaForm" hidden><label class="label" for="mfaCode">Código de seis dígitos</label>
+<input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+<button class="primary" type="submit">Verificar código</button></form>
+<button class="link" type="button" id="mfaLogout">Cerrar sesión</button>
+</section>
 <div id="message" role="status" aria-live="polite" hidden></div>
 <p class="fine">Entorno de desarrollo. No subas información confidencial de clientes todavía.</p>
 </main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
@@ -28,16 +43,104 @@ button{cursor:pointer;border:0;border-radius:10px;font-weight:750;padding:13px 1
 (()=>{'use strict';
 const url='https://lnzlbakqxbbtskkujlbp.supabase.co';
 const key='sb_publishable_jkYY4MF51OJNFgkV0aP-GQ_XmYDgzCW';
-const redirect='https://oscarbarruetam.github.io/hallel-media/hallel_acceso_ligero.html';
+const fromEmailLink=location.hash.includes('access_token=')||location.search.includes('code=')||location.hash.includes('type=invite');
 const $=id=>document.getElementById(id);
-let signup=false;
+const panels=['loginSection','accountSection','passwordSection','mfaSection'];
+let isOwner=false,haveRole=false,passwordFinished=false,pendingFactor=null,pendingSecret='';
+function showPanel(id){panels.forEach(k=>$(k).hidden=k!==id);$('message').hidden=true}
 function status(t,err=false){$('message').hidden=false;$('message').textContent=t;$('message').className=err?'error':''}
-if(!window.supabase?.createClient){status('No se pudo cargar Supabase. Revisa tu conexión a Internet.',true);return}
-const db=window.supabase.createClient(url,key,{auth:{persistSession:true,detectSessionInUrl:true}});
-$('switch').onclick=()=>{signup=!signup;$('formTitle').textContent=signup?'Crear cuenta':'Iniciar sesión';$('formHint').textContent=signup?'Regístrate y confirma el mensaje que recibirás por correo.':'Accede únicamente con una cuenta autorizada.';$('submit').textContent=signup?'Registrarme':'Ingresar';$('switch').textContent=signup?'Ya tengo una cuenta':'Crear mi cuenta';$('password').autocomplete=signup?'new-password':'current-password';$('message').hidden=true};
-$('loginForm').onsubmit=async e=>{e.preventDefault();$('submit').disabled=true;try{const email=$('email').value.trim().toLowerCase(),password=$('password').value;const r=signup?await db.auth.signUp({email,password,options:{emailRedirectTo:redirect}}):await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;if(signup){status(r.data.session?'Cuenta creada, pero la confirmación de correo podría estar desactivada. No se activarán permisos sin confirmación.':'Solicitud registrada. Revisa tu correo y confirma el enlace de Hallel.')}else await loadAccount()}catch(error){status(error.message||'No se pudo completar el acceso.',true)}finally{$('submit').disabled=false}};
-async function loadAccount(){const u=await db.auth.getUser();if(u.error||!u.data.user)return;const user=u.data.user;const [p,b]=await Promise.all([db.from('platform_admins').select('user_id').eq('user_id',user.id),db.from('brands').select('id').is('archived_at',null)]);if(p.error||b.error){status('No se pudieron comprobar los permisos. Vuelve a intentar.',true);return}$('loginSection').hidden=true;$('accountSection').hidden=false;$('accountEmail').textContent=user.email||'';$('accountRole').textContent=p.data?.length?'Superadministrador Hallel':b.data?.length?'Cuenta activa con acceso de marca':'Cuenta verificada; falta asignar acceso'}
-$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
-db.auth.getSession().then(r=>{if(r.data?.session)loadAccount()}).catch(e=>status(e.message,true));
+if(!window.supabase?.createClient){status('No se pudo cargar Supabase. Comprueba tu conexión.',true);return}
+const db=window.supabase.createClient(url,key,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
+$('loginForm').onsubmit=async e=>{
+ e.preventDefault();$('submit').disabled=true;
+ try{
+ const email=$('email').value.trim().toLowerCase(),password=$('password').value;
+ const r=await db.auth.signInWithPassword({email,password});
+ if(r.error)throw r.error;
+ await loadAccount();
+ }catch(error){status(error.message||'No fue posible iniciar sesión.',true)}
+ finally{$('submit').disabled=false}
+};
+async function loadAccount(){
+ const u=await db.auth.getUser();
+ if(u.error||!u.data.user){showPanel('loginSection');return}
+ const user=u.data.user;
+ const [p,m,b]=await Promise.all([
+ db.from('platform_admins').select('user_id').eq('user_id',user.id),
+ db.from('brand_memberships').select('role,brand_id').eq('user_id',user.id),
+ db.from('brands').select('id').is('archived_at',null)]);
+ if(p.error||m.error||b.error){status('No se pudieron comprobar tus permisos. Inténtalo de nuevo.',true);return}
+ isOwner=(p.data||[]).length>0;
+ haveRole=isOwner||(m.data||[]).some(row=>['brand_admin','area_lead'].includes(row.role));
+ if(fromEmailLink&&!passwordFinished&&!isOwner&&(m.data||[]).length>0){showPanel('passwordSection');return}
+ if(haveRole){
+ const assurance=await db.auth.mfa.getAuthenticatorAssuranceLevel();
+ if(assurance.error){status('No se pudo validar el segundo factor.',true);return}
+ if(assurance.data.currentLevel!=='aal2'){await beginMfa(assurance.data.nextLevel==='aal2');return}
+ }
+ showPanel('accountSection');
+ $('accountEmail').textContent=user.email||'';
+ $('accountRole').textContent=isOwner?'Superadministrador Hallel · segundo factor verificado':
+ (m.data||[]).some(row=>row.role==='brand_admin')?'Administrador de marca · segundo factor verificado':
+ (m.data||[]).some(row=>row.role==='area_lead')?'Líder de área · segundo factor verificado':
+ (b.data||[]).length?'Colaborador':'Cuenta sin marcas asignadas';
+}
+async function beginMfa(alreadyEnrolled){
+ showPanel('mfaSection');
+ $('mfaCode').value='';pendingFactor=null;pendingSecret='';
+ $('mfaQR').removeAttribute('src');
+ $('qrWrapper').hidden=true;$('mfaForm').hidden=true;$('startMfa').hidden=alreadyEnrolled;
+ $('mfaTitle').textContent=alreadyEnrolled?'Verificar segundo factor':'Configurar segundo factor';
+ $('mfaDesc').textContent=alreadyEnrolled?'Escribe el código de tu aplicación autenticadora.':'Activa MFA para continuar con los permisos administrativos.';
+ if(alreadyEnrolled){
+ const f=await db.auth.mfa.listFactors();
+ if(f.error)throw f.error;
+ const found=(f.data.totp||[]).find(x=>x.status==='verified');
+ if(!found){status('No se encontró un autenticador verificado. Contacta al administrador.',true);return}
+ pendingFactor=found.id;$('mfaForm').hidden=false;
+ }
+}
+$('startMfa').onclick=async()=>{
+ $('startMfa').disabled=true;
+ try{
+ const r=await db.auth.mfa.enroll({factorType:'totp',friendlyName:'HALLEL Team Hub'});
+ if(r.error)throw r.error;
+ pendingFactor=r.data.id;pendingSecret=r.data.totp.secret||'';
+ const qr=r.data.totp.qr_code||'';
+ if(qr.startsWith('data:image/svg+xml'))$('mfaQR').src=qr;
+ else if(qr.trim().startsWith('<svg'))$('mfaQR').src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(qr);
+ else throw new Error('Formato de código QR no reconocido.');
+ $('qrWrapper').hidden=false;$('mfaForm').hidden=false;$('startMfa').hidden=true;
+ }catch(error){status(error.message||'No fue posible preparar MFA.',true)}
+ finally{$('startMfa').disabled=false}
+};
+$('showSecret').onclick=()=>{
+ $('mfaSecret').textContent=pendingSecret?'Clave manual: '+pendingSecret:'No se obtuvo la clave manual.';
+ $('mfaSecret').hidden=false;
+};
+$('mfaForm').onsubmit=async e=>{
+ e.preventDefault();const btn=$('mfaForm').querySelector('button[type=submit]');btn.disabled=true;
+ try{
+ if(!pendingFactor)throw new Error('No hay segundo factor preparado.');
+ const challenge=await db.auth.mfa.challenge({factorId:pendingFactor});
+ if(challenge.error)throw challenge.error;
+ const verified=await db.auth.mfa.verify({factorId:pendingFactor,challengeId:challenge.data.id,code:$('mfaCode').value.trim()});
+ if(verified.error)throw verified.error;
+ $('mfaCode').value='';$('mfaSecret').textContent='';pendingSecret='';
+ await loadAccount();
+ }catch(error){status(error.message||'El código no pudo verificarse.',true)}
+ finally{btn.disabled=false}
+};
+$('passwordForm').onsubmit=async e=>{
+ e.preventDefault();const button=$('passwordForm').querySelector('button[type=submit]');button.disabled=true;
+ try{const p=$('newPassword').value;if(p.length<12)throw new Error('Usa al menos 12 caracteres.');
+ const r=await db.auth.updateUser({password:p});if(r.error)throw r.error;
+ passwordFinished=true;$('newPassword').value='';await loadAccount();
+ }catch(err){status(err.message||'No se pudo activar la contraseña.',true)}
+ finally{button.disabled=false}
+};
+async function logout(){await db.auth.signOut();showPanel('loginSection');$('email').value='';$('password').value=''}
+$('logout').onclick=logout;$('mfaLogout').onclick=logout;
+db.auth.getSession().then(r=>{if(r.data?.session)return loadAccount()}).catch(err=>status(err.message||'Error al iniciar sesión.',true));
 })();
 </script></body></html>
